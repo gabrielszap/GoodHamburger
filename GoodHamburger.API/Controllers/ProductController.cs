@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoodHamburger.API.Controllers
 {
     [ApiController]
+    [Route("api/product")]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
