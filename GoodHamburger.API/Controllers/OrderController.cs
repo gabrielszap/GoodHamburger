@@ -31,23 +31,23 @@ namespace GoodHamburger.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] OrderRequest orderRequest)
+        public async Task<IActionResult> Create([FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
         {
-            var result = await _orderService.CreateOrder(orderRequest);
+            var result = await _orderService.CreateOrder(orderRequest, cancellationToken);
             return Created(new Uri(""), result);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] OrderRequest orderRequest)
+        public async Task<IActionResult> Update([FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
         {
-            await _orderService.UpdateOrder(orderRequest);
+            await _orderService.UpdateOrder(orderRequest, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            await _orderService.DeleteOrder(id);
+            await _orderService.DeleteOrder(id, cancellationToken);
             return NoContent();
         }
     }
