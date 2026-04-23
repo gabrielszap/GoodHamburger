@@ -1,26 +1,30 @@
 begin;
 
-create table if not exists order (
+create table if not exists "order" (
     id uuid primary key,
-    createdAt timestamptz default now(),
-    isActive boolean default true
+    created_at timestamptz not null default now(),
+    is_active boolean not null default true
 );
 
-create table if not exists product (
+create table if not exists "product" (
     id uuid primary key,
     description varchar(200) not null,
     price numeric(10,2) not null,
     type varchar(50) not null,
-    isActive boolean default true
-    constraint ck_users_status
+    is_active boolean not null default true,
+    constraint ck_product_type
         check (type in ('Sanduiche', 'Acompanhamento', 'Bebida'))
 );
 
-create table if not exists orderProduct (
+create table if not exists order_product (
     id uuid primary key,
-    orderId uuid not null,
-    productId uuid not null,
-    isActive boolean default true,
+    order_id uuid not null,
+    product_id uuid not null,
+    is_active boolean not null default true,
+    constraint fk_order_product_order
+        foreign key (order_id) references "order"(id),
+    constraint fk_order_product_product
+        foreign key (product_id) references "product"(id)
 );
 
 commit;

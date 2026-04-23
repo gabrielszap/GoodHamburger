@@ -1,6 +1,6 @@
 begin;
 
-insert into product (
+insert into "product" (
     id,
     description,
     type,
@@ -14,7 +14,7 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into product (
+insert into "product" (
     id,
     description,
     type,
@@ -28,7 +28,7 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into product (
+insert into "product" (
     id,
     description,
     type,
@@ -42,7 +42,7 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into product (
+insert into "product" (
     id,
     description,
     type,
@@ -56,7 +56,7 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into product (
+insert into "product" (
     id,
     description,
     type,
