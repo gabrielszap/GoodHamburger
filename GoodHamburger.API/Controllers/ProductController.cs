@@ -16,15 +16,14 @@ namespace GoodHamburger.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var result = await _productService.GetAllAsync(cancellationToken);
-
             return Ok(result);
         }
 
-        [HttpGet("id")]
-        public async Task<IActionResult> GetProductById(Guid id, CancellationToken cancellationToken)
+        [HttpGet("id:guid")]
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
             var result = await _productService.GetByIdAsync(id, cancellationToken);
             return Ok(result);
@@ -34,17 +33,17 @@ namespace GoodHamburger.API.Controllers
         public async Task<IActionResult> Create([FromBody] ProductRequest productRequest, CancellationToken cancellationToken)
         {
             var result = await _productService.CreateAsync(productRequest, cancellationToken);
-            return Created(new Uri(""), result);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] ProductRequest productRequest, CancellationToken cancellationToken)
+        [HttpPut("id:guid")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] ProductRequest productRequest, CancellationToken cancellationToken)
         {
-            await _productService.UpdateAsync(productRequest, cancellationToken);
+            await _productService.UpdateAsync(id, productRequest, cancellationToken);
             return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("id:guid")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             await _productService.DeleteAsync(id, cancellationToken);

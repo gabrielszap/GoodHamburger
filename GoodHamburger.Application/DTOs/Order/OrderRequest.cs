@@ -9,7 +9,6 @@ namespace GoodHamburger.Application.DTOs.Order
 {
     public class OrderRequest
     {
-        public List<ProductRequest> Products { get; set; } = new List<ProductRequest>();
-        public DateTime? OrderDate { get; set; } = DateTime.Now;
+        public IReadOnlyCollection<Guid> ProductIds { get; init; } = Array.Empty<Guid>();
     }
 }

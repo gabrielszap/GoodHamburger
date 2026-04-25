@@ -9,9 +9,10 @@ namespace GoodHamburger.Application.DTOs.Product
 {
     public class ProductRequest
     {
+        public Guid Id { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
-        public ProductType Type { get; set; }
+        public string Type { get; set; }
 
     }
 }

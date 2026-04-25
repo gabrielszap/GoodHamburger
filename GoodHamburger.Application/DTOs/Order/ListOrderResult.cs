@@ -8,6 +8,6 @@ namespace GoodHamburger.Application.DTOs.Order
 {
     public class ListOrderResult
     {
-        List<OrderResult> Orders { get; set; }
+        public List<OrderResult> Orders { get; set; }
     }
 }

@@ -16,17 +16,17 @@ namespace GoodHamburger.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrders(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _orderService.GetOrders(cancellationToken);
+            var result = await _orderService.GetAllAsync(cancellationToken);
 
             return Ok(result);
         }
 
-        [HttpGet("id")]
+        [HttpGet("id:guid")]
         public async Task<IActionResult> GetOrderById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _orderService.GetOrderById(id, cancellationToken);
+            var result = await _orderService.GetByIdAsync(id, cancellationToken);
 
             return Ok(result);
         }
@@ -34,21 +34,21 @@ namespace GoodHamburger.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
         {
-            var result = await _orderService.CreateOrder(orderRequest, cancellationToken);
-            return Created(new Uri(""), result);
+            var result = await _orderService.CreateAsync(orderRequest, cancellationToken);
+            return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
+        [HttpPut("id:guid")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
         {
-            await _orderService.UpdateOrder(orderRequest, cancellationToken);
+            await _orderService.UpdateAsync(id, orderRequest, cancellationToken);
             return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("id:guid")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            await _orderService.DeleteOrder(id, cancellationToken);
+            await _orderService.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
     }

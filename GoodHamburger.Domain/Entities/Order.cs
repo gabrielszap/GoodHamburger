@@ -1,3 +1,4 @@
+using GoodHamburger.Domain.Abstractions.Exceptions;
 using GoodHamburger.Domain.Common;
 using GoodHamburger.Domain.Enums;
 
@@ -5,47 +6,52 @@ namespace GoodHamburger.Domain.Entities;
 
 public class Order : BaseEntity
 {
-    //public Product(
-    //    Guid categoryId,
-    //    string name,
-    //    string? shortName = null,
-    //    string? description = null,
-    //    Guid? id = null)
-    //    : base(id)
-    //{
-    //    CategoryId = Guard.AgainstEmptyId(categoryId, nameof(categoryId));
-    //    Name = Guard.AgainstNullOrWhiteSpace(name, nameof(name));
-    //    ShortName = string.IsNullOrWhiteSpace(shortName) ? null : shortName.Trim();
-    //    Description = description?.Trim();
-    //    IsActive = true;
-    //}
+    private readonly List<Product> _products = [];
+    public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
 
-    //public Guid CategoryId { get; private set; }
+    public decimal Subtotal => _products.Sum(p => p.Price);
+    public decimal DiscountPercentage => CalculateDiscountPercentage();
+    public decimal DiscountAmount => Math.Round(Subtotal * DiscountPercentage, 2);
+    public decimal Total => Subtotal - DiscountAmount;
 
-    //public string Name { get; private set; }
+    private Order(IEnumerable<Product> products)
+    {
+        AddProducts(products);
+    }
 
-    //public string? ShortName { get; private set; }
+    public static Order Create(IEnumerable<Product> products)
+    {
+        return new Order(products);
+    }
 
-    //public string? Description { get; private set; }
+    private void AddProducts(IEnumerable<Product> products)
+    {
+        var duplicatedType = products
+            .GroupBy(p => p.Type)
+            .FirstOrDefault(g => g.Count() > 1);
 
-    //public bool IsActive { get; private set; }
+        if (duplicatedType is not null)
+            throw new DomainException(
+                $"O pedido pode conter apenas um produto do tipo {duplicatedType.Key}.");
+          
+        _products.AddRange(products);
+    }
 
-    //public void UpdateDetails(string name, string? shortName, string? description)
-    //{
-    //    Name = Guard.AgainstNullOrWhiteSpace(name, nameof(name));
-    //    ShortName = string.IsNullOrWhiteSpace(shortName) ? null : shortName.Trim();
-    //    Description = description?.Trim();
-    //}
+    private decimal CalculateDiscountPercentage()
+    {
+        var hasSandwich = _products.Any(p => p.Type == ProductType.Sanduiche);
+        var hasSide = _products.Any(p => p.Type == ProductType.Acompanhamento);
+        var hasDrink = _products.Any(p => p.Type == ProductType.Bebida);
 
-    //public void Activate()
-    //{
-    //    IsActive = true;
-    //}
+        if (hasSandwich && hasSide && hasDrink)
+            return 0.20m;
 
-    //public void Deactivate()
-    //{
-    //    IsActive = false;
-    //}
-    public Guid Id { get; set; }
-    public List<Product> Products { get; set; } = new List<Product>();
+        if (hasSandwich && hasDrink)
+            return 0.15m;
+
+        if (hasSandwich && hasSide)
+            return 0.10m;
+
+        return 0m;
+    }
 }

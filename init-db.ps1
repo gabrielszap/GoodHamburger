@@ -39,6 +39,7 @@ if ($databaseExists.Trim() -ne "1") {
     Invoke-ContainerPsql -Database "postgres" -CommandText "create database $DatabaseName;"
 }
 
+Invoke-ContainerPsqlFile -Database $DatabaseName -FilePath (Join-Path $scriptRoot "./database/000_extensions.sql")
 Invoke-ContainerPsqlFile -Database $DatabaseName -FilePath (Join-Path $scriptRoot "./database/001_initial_schema.sql")
 Invoke-ContainerPsqlFile -Database $DatabaseName -FilePath (Join-Path $scriptRoot "./database/002_indexes_and_constraints.sql")
 Invoke-ContainerPsqlFile -Database $DatabaseName -FilePath (Join-Path $scriptRoot "./database/003_seed_minimal.sql")

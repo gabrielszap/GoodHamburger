@@ -12,7 +12,7 @@ namespace GoodHamburger.Application.Contracts
         Task<ListProductResult> GetAllAsync(CancellationToken cancellationToken);
         Task<ProductResult> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<ProductResult> CreateAsync(ProductRequest productRequest, CancellationToken cancellationToken);
-        Task UpdateAsync(ProductRequest productRequest, CancellationToken cancellationToken);
+        Task UpdateAsync(Guid id, ProductRequest productRequest, CancellationToken cancellationToken);
         Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     }
 }

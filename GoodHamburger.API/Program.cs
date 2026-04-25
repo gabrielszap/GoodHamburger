@@ -1,3 +1,4 @@
+using GoodHamburger.Api.Middlewares;
 using GoodHamburger.Application.DependencyInjection;
 using GoodHamburger.Infrastructure.DependencyInjection;
 
@@ -11,6 +12,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 

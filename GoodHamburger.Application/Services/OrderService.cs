@@ -1,58 +1,89 @@
-﻿using GoodHamburger.Application.Contracts;
+﻿using FluentValidation;
+using GoodHamburger.Application.Abstractions.Exceptions;
+using GoodHamburger.Application.Abstractions.Persistence;
+using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Order;
+using GoodHamburger.Application.DTOs.Product;
+using GoodHamburger.Domain.Entities;
+using GoodHamburger.Domain.Enums;
 
 namespace GoodHamburger.Application.Services
 {
     public class OrderService : IOrderService
     {
-        public Task<OrderResult> CreateOrder(OrderRequest order)
+        private readonly IOrderRepository _orderRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IValidator<OrderRequest> _validator;
+        private readonly IApplicationUnitOfWork _unitOfWork;
+
+        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, IValidator<OrderRequest> validator, IApplicationUnitOfWork unitOfWork)
         {
-            throw new NotImplementedException();
+            _orderRepository = orderRepository;
+            _productRepository = productRepository;
+            _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
-        public Task<OrderResult> CreateOrder(OrderRequest order, CancellationToken cancellationToken)
+        public async Task<OrderResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var order = await _orderRepository.GetByIdAsync(id, cancellationToken);
+            return order;
         }
 
-        public Task DeleteOrder(Guid id)
+        public async Task<ListOrderResult> GetAllAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var orders = await _orderRepository.GetAllAsync(cancellationToken);
+            return orders;
+        }
+        public async Task<OrderResult> CreateAsync(OrderRequest orderRequest, CancellationToken cancellationToken)
+        {
+            await _validator.ValidateAndThrowAsync(orderRequest, cancellationToken);
+
+            var products = await _productRepository.GetByIdsAsync(
+                orderRequest.ProductIds,
+                cancellationToken);
+
+            if (products.Count != orderRequest.ProductIds.Count)
+                throw new NotFoundException("Um ou mais produtos informados não existem.");
+
+            var order = Order.Create(products);
+
+            var result = await _orderRepository.AddAsync(order, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return result;
         }
 
-        public Task DeleteOrder(Guid id, CancellationToken cancellationToken)
+        public async Task UpdateAsync(Guid orderId, OrderRequest orderRequest, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
+            await _validator.ValidateAndThrowAsync(orderRequest, cancellationToken);
 
-        public Task<OrderResult> GetOrderById(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+            var existingOrder = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
 
-        public Task<OrderResult> GetOrderById(Guid id, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            if (existingOrder is null)
+                throw new NotFoundException($"Pedido {orderId} não encontrado.");
 
-        public Task<ListOrderResult> GetOrders()
-        {
-            throw new NotImplementedException();
-        }
+            var products = await _productRepository.GetByIdsAsync(
+                orderRequest.ProductIds,
+                cancellationToken);
 
-        public Task<ListOrderResult> GetOrders(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            if (products.Count != orderRequest.ProductIds.Count)
+                throw new NotFoundException("Um ou mais produtos informados não existem.");
 
-        public Task UpdateOrder(OrderRequest order)
-        {
-            throw new NotImplementedException();
-        }
+            var order = Order.Create(products);
 
-        public Task UpdateOrder(OrderRequest order, CancellationToken cancellationToken)
+            await _orderRepository.UpdateAsync(orderId, order, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        public async Task DeleteAsync(Guid orderId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var orderResult = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+
+            if (orderResult is null)
+                throw new NotFoundException($"Pedido {orderId} não encontrado.");
+
+            await _orderRepository.DeleteAsync(orderId, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using GoodHamburger.Api.ErrorHandling;
 using GoodHamburger.Application.Abstractions.Exceptions;
+using GoodHamburger.Domain.Abstractions.Exceptions;
 
 namespace GoodHamburger.Api.Middlewares;
 
@@ -42,6 +43,10 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             ArgumentException => (
                 StatusCodes.Status400BadRequest,
                 "Bad request",
+                exception.Message),
+            DomainException => (
+                StatusCodes.Status500InternalServerError,
+                "Internal server error",
                 exception.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,

@@ -7,7 +7,7 @@ namespace GoodHamburger.Application.DTOs.Order
         public Guid Id { get; set; }
         public List<ProductResult> Products { get; set; } = new List<ProductResult>();  
         public decimal TotalPrice { get; set; }
-        public DateTime OrderDate { get; set; }
-
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
