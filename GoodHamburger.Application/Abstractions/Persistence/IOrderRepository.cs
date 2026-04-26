@@ -6,9 +6,9 @@ namespace GoodHamburger.Application.Abstractions.Persistence;
 
 public interface IOrderRepository
 {
-    Task<ListOrderResult> GetAllAsync(CancellationToken cancellationToken);
-    Task<OrderResult> GetByIdAsync(Guid orderId, CancellationToken cancellationToken);
-    Task<OrderResult> AddAsync(Order order, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Order>> GetAllAsync(CancellationToken cancellationToken);
+    Task<Order> GetByIdAsync(Guid orderId, CancellationToken cancellationToken);
+    Task<Order> AddAsync(Order order, CancellationToken cancellationToken);
     Task UpdateAsync(Guid orderId, Order order, CancellationToken cancellationToken);
     Task DeleteAsync(Guid orderId, CancellationToken cancellationToken);
 }

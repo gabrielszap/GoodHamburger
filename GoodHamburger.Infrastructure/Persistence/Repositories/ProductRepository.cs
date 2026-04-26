@@ -15,10 +15,10 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
     {
     }
 
-    public async Task<ListProductResult> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<Product>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
-        var records = await connection.QueryAsync<Product>(
+        var products = await connection.QueryAsync<Product>(
             new CommandDefinition(
                 """
                 select
@@ -26,30 +26,19 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                     description as Description,
                     price as Price,
                     type as Type,
-                    is_active as IsActive
+                    is_active as IsActive,
+                    created_at as CreatedAt
                 from product
                 """,
-                cancellationToken: cancellationToken));
+                cancellationToken: cancellationToken));        
 
-        var result = new ListProductResult
-        {
-            Products = records.Select(p => new ProductResult
-            {
-                Id = p.Id,
-                Description = p.Description,
-                Price = p.Price,
-                Type = p.Type,
-                IsActive = p.IsActive
-            }).ToList()
-        };
-
-        return result;
+        return products.ToList() ?? new List<Product>();
     }
 
-    public async Task<ProductResult> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Product> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
-        var record = await connection.QueryFirstAsync<Product>(
+        var product = await connection.QueryFirstAsync<Product>(
             new CommandDefinition(
                 """
                 select
@@ -64,16 +53,7 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                 new { Id = id },
                 cancellationToken: cancellationToken));
 
-        var result = new ProductResult()
-        {
-            Id = record.Id,
-            Description = record.Description,
-            Price = record.Price,
-            Type = record.Type,
-            IsActive = record.IsActive
-        };
-
-        return result;
+        return product;
     }
 
     public async Task<IReadOnlyCollection<Product>> GetByIdsAsync(
@@ -101,12 +81,12 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
         return products.ToList();
     }
 
-    public async Task<ProductResult> AddAsync(Product product, CancellationToken cancellationToken)
+    public async Task<Product> AddAsync(Product product, CancellationToken cancellationToken)
     {
         await EnsureTransactionAsync(cancellationToken);
         var connection = await GetOpenConnectionAsync(cancellationToken);
 
-        var record = await connection.QuerySingleAsync<Product>(new CommandDefinition(
+        var result = await connection.QuerySingleAsync<Product>(new CommandDefinition(
             """
                 insert into product (
                     description,
@@ -122,7 +102,9 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                 id AS "Id",
                 description AS "Description",
                 price AS "Price",
-                type AS "Type";
+                type AS "Type",
+                is_active AS "IsActive",
+                created_at AS "CreatedAt";
                 """,
             new
             {
@@ -132,16 +114,7 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
             },
             Transaction,
             cancellationToken: cancellationToken));
-
-        var result = new ProductResult()
-        {
-            Id = record.Id,
-            Description = record.Description,
-            Price = record.Price,
-            Type = record.Type,
-            IsActive = record.IsActive
-        };
-
+        
         return result;
 
     }

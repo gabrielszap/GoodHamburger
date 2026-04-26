@@ -5,10 +5,10 @@ namespace GoodHamburger.Application.Abstractions.Persistence;
 
 public interface IProductRepository
 {
-    Task<ListProductResult> GetAllAsync(CancellationToken cancellationToken);
-    Task<ProductResult> GetByIdAsync(Guid productId, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Product>> GetAllAsync(CancellationToken cancellationToken);
+    Task<Product> GetByIdAsync(Guid productId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Product>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
-    Task<ProductResult> AddAsync(Product product, CancellationToken cancellationToken);
+    Task<Product> AddAsync(Product product, CancellationToken cancellationToken);
     Task UpdateAsync(Guid id, Product product, CancellationToken cancellationToken);
     Task DeleteAsync(Guid productId, CancellationToken cancellationToken);
 }

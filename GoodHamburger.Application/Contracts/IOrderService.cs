@@ -10,7 +10,7 @@ namespace GoodHamburger.Application.Contracts
     public interface IOrderService
     {
         Task<OrderResult> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<ListOrderResult> GetAllAsync(CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<OrderResult>> GetAllAsync(CancellationToken cancellationToken);
         Task<OrderResult> CreateAsync(OrderRequest order, CancellationToken cancellationToken);
         Task UpdateAsync(Guid id, OrderRequest order, CancellationToken cancellationToken);
         Task DeleteAsync(Guid id, CancellationToken cancellationToken);

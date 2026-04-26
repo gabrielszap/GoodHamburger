@@ -3,6 +3,7 @@ using GoodHamburger.Application.Abstractions.Exceptions;
 using GoodHamburger.Application.Abstractions.Persistence;
 using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Product;
+using GoodHamburger.Application.Mappers;
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
 using System.Threading;
@@ -35,19 +36,19 @@ namespace GoodHamburger.Application.Services
 
             var result = await _productRepository.AddAsync(product, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return result;
+            return ProductMapper.ToResult(result);
         }
 
         public async Task<ProductResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var product = await _productRepository.GetByIdAsync(id, cancellationToken);
-            return product;
+            return ProductMapper.ToResult(product);
         }
 
-        public async Task<ListProductResult> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<ProductResult>> GetAllAsync(CancellationToken cancellationToken)
         {
             var products = await _productRepository.GetAllAsync(cancellationToken);
-            return products;
+            return ProductMapper.ToResultList(products);
         }
 
         public async Task UpdateAsync(Guid id, ProductRequest productRequest, CancellationToken cancellationToken)

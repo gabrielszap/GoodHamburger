@@ -19,6 +19,15 @@ public class Order : BaseEntity
         AddProducts(products);
     }
 
+    public static Order Create(Guid id, IEnumerable<Product> products, bool isActive, DateTime createdAt)
+    {
+        var order = new Order(products);
+        order.Id = id;
+        order.IsActive = isActive;
+        order.CreatedAt = createdAt;
+
+        return order;
+    }
     public static Order Create(IEnumerable<Product> products)
     {
         return new Order(products);

@@ -14,5 +14,6 @@ namespace GoodHamburger.Application.DTOs.Product
         public decimal Price { get; set; }
         public ProductType Type { get; set; }
         public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

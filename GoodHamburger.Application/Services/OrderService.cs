@@ -4,6 +4,7 @@ using GoodHamburger.Application.Abstractions.Persistence;
 using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Order;
 using GoodHamburger.Application.DTOs.Product;
+using GoodHamburger.Application.Mappers;
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
 
@@ -27,13 +28,13 @@ namespace GoodHamburger.Application.Services
         public async Task<OrderResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var order = await _orderRepository.GetByIdAsync(id, cancellationToken);
-            return order;
+            return OrderMapper.ToResult(order);
         }
 
-        public async Task<ListOrderResult> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<OrderResult>> GetAllAsync(CancellationToken cancellationToken)
         {
             var orders = await _orderRepository.GetAllAsync(cancellationToken);
-            return orders;
+            return OrderMapper.ToResultList(orders).ToList();
         }
         public async Task<OrderResult> CreateAsync(OrderRequest orderRequest, CancellationToken cancellationToken)
         {
@@ -48,10 +49,11 @@ namespace GoodHamburger.Application.Services
 
             var order = Order.Create(products);
 
-            var result = await _orderRepository.AddAsync(order, cancellationToken);
+            var createdOrder = await _orderRepository.AddAsync(order, cancellationToken);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return result;
+            return OrderMapper.ToResult(createdOrder);
         }
 
         public async Task UpdateAsync(Guid orderId, OrderRequest orderRequest, CancellationToken cancellationToken)

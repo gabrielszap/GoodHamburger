@@ -9,7 +9,7 @@ namespace GoodHamburger.Application.Contracts
 {
     public interface IProductService
     {
-        Task<ListProductResult> GetAllAsync(CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<ProductResult>> GetAllAsync(CancellationToken cancellationToken);
         Task<ProductResult> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<ProductResult> CreateAsync(ProductRequest productRequest, CancellationToken cancellationToken);
         Task UpdateAsync(Guid id, ProductRequest productRequest, CancellationToken cancellationToken);

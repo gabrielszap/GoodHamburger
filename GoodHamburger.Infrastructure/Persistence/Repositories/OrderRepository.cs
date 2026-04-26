@@ -16,7 +16,7 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
     {
     }
 
-    public async Task<ListOrderResult> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Order>> GetAllAsync(CancellationToken cancellationToken)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<OrderProductRow>(
@@ -55,7 +55,7 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
             {
                 var products = group
                     .Where(x => x.ProductId.HasValue)
-                    .Select(x => new ProductResult
+                    .Select(x => new Product
                     {
                         Id = x.ProductId!.Value,
                         Description = x.Description!,
@@ -65,23 +65,14 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                     })
                     .ToList();
 
-                return new OrderResult
-                {
-                    Id = group.Key.OrderId,
-                    IsActive = group.Key.OrderIsActive,
-                    CreatedAt = group.Key.CreatedAt,
-                    Products = products
-                };
+                return Order.Create(group.Key.OrderId, products.ToList(), group.Key.OrderIsActive, group.Key.CreatedAt);
             })
             .ToList();
 
-        return new ListOrderResult
-        {
-            Orders = orders
-        };
+        return orders;
     }
 
-    public async Task<OrderResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
 
@@ -102,7 +93,7 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
         if (orderRecord is null)
             throw new KeyNotFoundException($"Pedido {id} não encontrado.");
 
-        var products = await connection.QueryAsync<ProductResult>(
+        var products = await connection.QueryAsync<Product>(
             new CommandDefinition(
                 """
             select
@@ -121,18 +112,11 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                 new { Id = id },
                 cancellationToken: cancellationToken));
 
-        var productsList = products.ToList();
-
-        return new OrderResult
-        {
-            Id = orderRecord.Id,
-            IsActive = orderRecord.IsActive,
-            CreatedAt = orderRecord.CreatedAt,
-            Products = productsList
-        };
+        return Order.Create(orderRecord.Id, products.ToList(), orderRecord.IsActive, orderRecord.CreatedAt);
+        
     }
 
-    public async Task<OrderResult> AddAsync(Order order, CancellationToken cancellationToken)
+    public async Task<Order> AddAsync(Order order, CancellationToken cancellationToken)
     {
         await EnsureTransactionAsync(cancellationToken);
         var connection = await GetOpenConnectionAsync(cancellationToken);
@@ -166,9 +150,7 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                     cancellationToken: cancellationToken));
         }
 
-        var result = await GetByIdAsync(record.Id, cancellationToken);
-
-        return result;
+        return await GetByIdAsync(record.Id, cancellationToken);
     }
 
     public async Task UpdateAsync(Guid orderId, Order order, CancellationToken cancellationToken)
