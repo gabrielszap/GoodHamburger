@@ -1,4 +1,5 @@
-﻿using GoodHamburger.Application.Contracts;
+﻿using GoodHamburger.API.Requests;
+using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Common;
 using GoodHamburger.Application.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
@@ -17,17 +18,28 @@ namespace GoodHamburger.API.Controllers
         }
 
         /// <summary>
-        /// Retorna o cardápio da lanchonete (menu).
+        /// Retorna o cardápio da lanchonete (menu) de forma paginada.
         /// </summary>
         /// <remarks>
-        /// Este endpoint representa o menu disponível para pedidos.
-        /// Inclui sanduíches, acompanhamentos e bebidas.
+        /// Este endpoint representa o menu disponível para pedidos, contendo:
+        /// - Sanduíches
+        /// - Acompanhamentos
+        /// - Bebidas
+        ///
+        /// A paginação é controlada pelos parâmetros:
+        /// - page: número da página (mínimo 1)
+        /// - pageSize: quantidade de itens por página (máximo 100)
         /// </remarks>
-        /// <response code="200">Lista de produtos do menu</response>
+        /// <param name="query">Parâmetros de paginação (page, pageSize)</param>
+        /// <response code="200">Lista paginada de produtos do menu</response>
+        /// <response code="400">Erro de validação nos parâmetros de paginação</response>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] PaginationQuery query, CancellationToken cancellationToken)
         {
+            var pagination = PaginationRequest.Create(query.Page, query.PageSize);
+
             var result = await _productService.GetAllAsync(pagination, cancellationToken);
+
             return Ok(result);
         }
 

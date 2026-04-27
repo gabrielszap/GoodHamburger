@@ -1,4 +1,5 @@
-﻿using GoodHamburger.Application.Contracts;
+﻿using GoodHamburger.API.Requests;
+using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Common;
 using GoodHamburger.Application.DTOs.Order;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +18,28 @@ namespace GoodHamburger.API.Controllers
         }
 
         /// <summary>
-        /// Retorna todos os pedidos.
+        /// Retorna todos os pedidos de forma paginada.
         /// </summary>
-        /// <response code="200">Lista de pedidos</response>
+        /// <remarks>
+        /// Retorna a lista de pedidos ativos com seus respectivos produtos,
+        /// incluindo os valores calculados:
+        /// - subtotal
+        /// - percentual de desconto
+        /// - valor do desconto
+        /// - total final
+        ///
+        /// A paginação é controlada pelos parâmetros:
+        /// - page: número da página (mínimo 1)
+        /// - pageSize: quantidade de itens por página (máximo 100)
+        /// </remarks>
+        /// <param name="query">Parâmetros de paginação (page, pageSize)</param>
+        /// <response code="200">Lista paginada de pedidos</response>
+        /// <response code="400">Erro de validação nos parâmetros de paginação</response>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] PaginationQuery query, CancellationToken cancellationToken)
         {
+            var pagination = PaginationRequest.Create(query.Page, query.PageSize);
+
             var result = await _orderService.GetAllAsync(pagination, cancellationToken);
 
             return Ok(result);

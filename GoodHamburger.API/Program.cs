@@ -1,6 +1,9 @@
+using FluentValidation;
 using GoodHamburger.API.Filters;
 using GoodHamburger.API.Middlewares;
+using GoodHamburger.API.Requests;
 using GoodHamburger.Application.DependencyInjection;
+using GoodHamburger.Application.Validators;
 using GoodHamburger.Infrastructure.DependencyInjection;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -22,6 +25,7 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+builder.Services.AddValidatorsFromAssemblyContaining<PaginationQueryValidator>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -40,14 +44,11 @@ app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
 app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/")
     {
-        context.Response.StatusCode = StatusCodes.Status302Found;
-        context.Response.Headers.Location = "/swagger";
+        context.Response.Redirect("/swagger");
         return;
     }
 

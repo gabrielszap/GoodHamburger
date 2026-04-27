@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
+using GoodHamburger.API.Requests;
 using GoodHamburger.Application.DTOs.Common;
 
 namespace GoodHamburger.Application.Validators;
 
-public sealed class PaginationRequestValidator : AbstractValidator<PaginationRequest>
+public sealed class PaginationQueryValidator : AbstractValidator<PaginationQuery>
 {
-    public PaginationRequestValidator()
+    public PaginationQueryValidator()
     {
         RuleFor(x => x.Page)
             .GreaterThanOrEqualTo(1)

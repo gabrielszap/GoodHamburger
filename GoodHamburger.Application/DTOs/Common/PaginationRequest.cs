@@ -1,22 +1,21 @@
-﻿//using Swashbuckle.AspNetCore.Annotations;
-using System.Text.Json.Serialization;
+﻿namespace GoodHamburger.Application.DTOs.Common;
 
-namespace GoodHamburger.Application.DTOs.Common
+public sealed class PaginationRequest
 {
-    public sealed class PaginationRequest
+    private const int MaxPageSize = 100;
+
+    public int Page { get; init; }
+    public int PageSize { get; init; }
+
+    public int Skip => (Page - 1) * PageSize;
+    public int Take => PageSize > MaxPageSize ? MaxPageSize : PageSize;
+
+    public static PaginationRequest Create(int page, int pageSize)
     {
-        private const int MaxPageSize = 100;
-
-        public int Page { get; init; } = 1;
-
-        public int PageSize { get; init; } = 10;
-
-        //[SwaggerSchema(ReadOnly = true)]
-        [JsonIgnore]
-        public int Skip => (Page - 1) * PageSize;
-
-        //[SwaggerSchema(ReadOnly = true)]
-        [JsonIgnore]
-        public int Take => PageSize > MaxPageSize ? MaxPageSize : PageSize;
+        return new PaginationRequest
+        {
+            Page = page < 1 ? 1 : page,
+            PageSize = pageSize < 1 ? 10 : pageSize
+        };
     }
 }
