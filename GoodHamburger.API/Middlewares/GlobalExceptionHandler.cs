@@ -1,11 +1,10 @@
-using System.Diagnostics;
 using FluentValidation;
-using Microsoft.AspNetCore.Diagnostics;
-using GoodHamburger.Api.ErrorHandling;
 using GoodHamburger.Application.Abstractions.Exceptions;
 using GoodHamburger.Domain.Abstractions.Exceptions;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GoodHamburger.Api.Middlewares;
+namespace GoodHamburger.API.Middlewares;
 
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
@@ -16,60 +15,77 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         _logger = logger;
     }
 
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
     {
-        var (statusCode, title, detail) = exception switch
+        var problemDetails = exception switch
         {
-            ValidationException validationException => (
-                StatusCodes.Status400BadRequest,
-                "Validation failed",
-                validationException.Message),
-            NotFoundException => (
-                StatusCodes.Status404NotFound,
-                "Resource not found",
-                exception.Message),
-            ConflictException => (
-                StatusCodes.Status409Conflict,
-                "Conflict",
-                exception.Message),
-            UnauthorizedException => (
-                StatusCodes.Status401Unauthorized,
-                "Unauthorized",
-                exception.Message),
-            BadHttpRequestException => (
-                StatusCodes.Status400BadRequest,
-                "Bad request",
-                exception.Message),
-            ArgumentException => (
-                StatusCodes.Status400BadRequest,
-                "Bad request",
-                exception.Message),
-            DomainException => (
-                StatusCodes.Status500InternalServerError,
-                "Internal server error",
-                exception.Message),
-            _ => (
-                StatusCodes.Status500InternalServerError,
-                "Internal server error",
-                "An unexpected error occurred.")
+            ValidationException validationException => CreateValidationProblemDetails(httpContext, validationException),
+
+            DomainException domainException => new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Business rule violation",
+                Detail = domainException.Message,
+                Instance = httpContext.Request.Path
+            },
+
+            NotFoundException notFoundException => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Resource not found",
+                Detail = notFoundException.Message,
+                Instance = httpContext.Request.Path
+            },
+
+            KeyNotFoundException keyNotFoundException => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Resource not found",
+                Detail = keyNotFoundException.Message,
+                Instance = httpContext.Request.Path
+            },
+
+            _ => new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Unexpected error",
+                Detail = "An unexpected error occurred while processing the request.",
+                Instance = httpContext.Request.Path
+            }
         };
 
-        _logger.LogError(
-            exception,
-            "Unhandled exception while processing {Method} {Path}. TraceId: {TraceId}",
-            httpContext.Request.Method,
-            httpContext.Request.Path,
-            Activity.Current?.Id ?? httpContext.TraceIdentifier);
+        if (problemDetails.Status == StatusCodes.Status500InternalServerError)
+            _logger.LogError(exception, "Unexpected error occurred.");
+        else
+            _logger.LogWarning(exception, "Handled exception occurred.");
 
-        await ApiProblemDetailsWriter.WriteAsync(
-            httpContext,
-            statusCode,
-            title,
-            detail,
-            exception,
-            exception as ValidationException,
-            cancellationToken);
+        httpContext.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
+        httpContext.Response.ContentType = "application/problem+json";
+
+        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
+    }
+
+    private static ValidationProblemDetails CreateValidationProblemDetails(
+        HttpContext httpContext,
+        ValidationException exception)
+    {
+        var errors = exception.Errors
+            .GroupBy(x => x.PropertyName)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(x => x.ErrorMessage).ToArray());
+
+        return new ValidationProblemDetails(errors)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Validation error",
+            Detail = "One or more validation errors occurred.",
+            Instance = httpContext.Request.Path
+        };
     }
 }

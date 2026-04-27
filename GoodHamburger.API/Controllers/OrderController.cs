@@ -23,7 +23,7 @@ namespace GoodHamburger.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("id:guid")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetOrderById(Guid id, CancellationToken cancellationToken)
         {
             var result = await _orderService.GetByIdAsync(id, cancellationToken);
@@ -38,14 +38,14 @@ namespace GoodHamburger.API.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
-        [HttpPut("id:guid")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] OrderRequest orderRequest, CancellationToken cancellationToken)
         {
             await _orderService.UpdateAsync(id, orderRequest, cancellationToken);
             return NoContent();
         }
 
-        [HttpDelete("id:guid")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             await _orderService.DeleteAsync(id, cancellationToken);
