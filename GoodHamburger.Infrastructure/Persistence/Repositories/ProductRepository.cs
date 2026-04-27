@@ -29,6 +29,7 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                     is_active as IsActive,
                     created_at as CreatedAt
                 from product
+                where is_active = true
                 order by created_at desc
                 limit @Take offset @Skip;
                 """,
@@ -59,6 +60,29 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                 where id = @Id
                 """,
                 new { Id = id },
+                cancellationToken: cancellationToken));
+
+        return product;
+    }
+
+    public async Task<Product> GetByDescriptionAsync(string description, CancellationToken cancellationToken = default)
+    {
+        var connection = await GetOpenConnectionAsync(cancellationToken);
+        var product = await connection.QueryFirstAsync<Product>(
+            new CommandDefinition(
+                """
+                select
+                    id as Id,
+                    description as Description,
+                    price as Price,
+                    type as Type,
+                    is_active as IsActive,
+                    created_at as CreatedAt
+                from product
+                where description = @Description
+                  and is_active = true
+                """,
+                new { Description = description },
                 cancellationToken: cancellationToken));
 
         return product;

@@ -27,6 +27,11 @@ namespace GoodHamburger.Application.Services
         {
             await _validator.ValidateAndThrowAsync(productRequest, cancellationToken);
 
+            var existingProduct = await _productRepository.GetByDescriptionAsync(productRequest.Description, cancellationToken);
+
+            if (existingProduct != null)
+                throw new ConflictException("O produto já existe.");
+
             var product = Product.Create(productRequest.Description, productRequest.Price, (ProductType)Enum.Parse(typeof(ProductType), productRequest.Type));
 
             var result = await _productRepository.AddAsync(product, cancellationToken);

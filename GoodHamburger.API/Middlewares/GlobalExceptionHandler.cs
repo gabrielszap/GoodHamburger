@@ -32,6 +32,14 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 Instance = httpContext.Request.Path
             },
 
+            ConflictException conflictException => new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Conflict",
+                Detail = conflictException.Message,
+                Instance = httpContext.Request.Path
+            },
+
             NotFoundException notFoundException => new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,
