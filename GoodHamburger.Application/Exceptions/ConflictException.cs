@@ -1,4 +1,4 @@
-namespace GoodHamburger.Application.Abstractions.Exceptions;
+namespace GoodHamburger.Application.Exceptions;
 
 public sealed class ConflictException : Exception
 {

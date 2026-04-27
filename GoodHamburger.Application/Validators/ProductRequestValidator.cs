@@ -1,7 +1,7 @@
 using FluentValidation;
 using GoodHamburger.Application.DTOs.Product;
 
-namespace GoodHamburger.Application.Validators.Auth;
+namespace GoodHamburger.Application.Validators;
 
 public sealed class ProductRequestValidator : AbstractValidator<ProductRequest>
 {

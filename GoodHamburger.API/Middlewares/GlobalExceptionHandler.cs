@@ -1,6 +1,6 @@
 using FluentValidation;
-using GoodHamburger.Application.Abstractions.Exceptions;
-using GoodHamburger.Domain.Abstractions.Exceptions;
+using GoodHamburger.Application.Exceptions;
+using GoodHamburger.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 

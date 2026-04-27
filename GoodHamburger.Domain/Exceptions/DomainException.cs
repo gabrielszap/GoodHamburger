@@ -1,4 +1,4 @@
-namespace GoodHamburger.Domain.Abstractions.Exceptions;
+namespace GoodHamburger.Domain.Exceptions;
 
 public sealed class DomainException : Exception
 {

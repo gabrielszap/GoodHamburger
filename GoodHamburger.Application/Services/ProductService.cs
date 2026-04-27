@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using GoodHamburger.Application.Abstractions.Exceptions;
+using GoodHamburger.Application.Exceptions;
 using GoodHamburger.Application.Abstractions.Persistence;
 using GoodHamburger.Application.Contracts;
 using GoodHamburger.Application.DTOs.Product;

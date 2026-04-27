@@ -1,4 +1,4 @@
-using GoodHamburger.Domain.Abstractions.Exceptions;
+using GoodHamburger.Domain.Exceptions;
 using GoodHamburger.Domain.Common;
 using GoodHamburger.Domain.Enums;
 

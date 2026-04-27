@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using GoodHamburger.Domain.Abstractions.Exceptions;
 using GoodHamburger.Domain.Entities;
+using GoodHamburger.Domain.Exceptions;
 using GoodHamburger.UnitTests.Builders;
 
 namespace GoodHamburger.UnitTests.Domain;
