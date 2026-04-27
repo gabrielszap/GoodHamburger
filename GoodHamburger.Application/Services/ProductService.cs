@@ -27,12 +27,7 @@ namespace GoodHamburger.Application.Services
         {
             await _validator.ValidateAndThrowAsync(productRequest, cancellationToken);
 
-            var product = new Product
-            {
-                Description = productRequest.Description,
-                Price = productRequest.Price,
-                Type = (ProductType)Enum.Parse(typeof(ProductType), productRequest.Type)
-            };
+            var product = Product.Create(productRequest.Description, productRequest.Price, (ProductType)Enum.Parse(typeof(ProductType), productRequest.Type));
 
             var result = await _productRepository.AddAsync(product, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -60,12 +55,7 @@ namespace GoodHamburger.Application.Services
             if (productResult is null)
                 throw new NotFoundException($"Produto {id} não encontrado.");
 
-            var product = new Product
-            {
-                Description = productRequest.Description,
-                Price = productRequest.Price,
-                Type = (ProductType)Enum.Parse(typeof(ProductType), productRequest.Type)
-            };
+            var product = Product.Create(productRequest.Description, productRequest.Price, (ProductType)Enum.Parse(typeof(ProductType), productRequest.Type));
 
             await _productRepository.UpdateAsync(id, product, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

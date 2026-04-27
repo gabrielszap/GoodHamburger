@@ -55,14 +55,13 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
             {
                 var products = group
                     .Where(x => x.ProductId.HasValue)
-                    .Select(x => new Product
-                    {
-                        Id = x.ProductId!.Value,
-                        Description = x.Description!,
-                        Price = x.Price!.Value,
-                        Type = x.Type,
-                        IsActive = x.ProductIsActive!.Value
-                    })
+                    .Select(x => Product.Create(
+                        x.ProductId!.Value,
+                        x.Description!,
+                        x.Price!.Value,
+                        x.Type,
+                        x.ProductIsActive!.Value
+                    ))
                     .ToList();
 
                 return Order.Create(group.Key.OrderId, products.ToList(), group.Key.OrderIsActive, group.Key.CreatedAt);
@@ -226,6 +225,15 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
         public decimal? Price { get; set; }
         public ProductType Type { get; set; }
         public bool? ProductIsActive { get; set; }
+    }
+
+    private sealed class ProductRecord
+    {
+        public Guid Id { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public ProductType Type { get; set; }
+        public bool IsActive { get; set; }
     }
 
 

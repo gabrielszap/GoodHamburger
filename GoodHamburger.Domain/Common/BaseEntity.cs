@@ -12,7 +12,7 @@ public abstract class BaseEntity
         Id = id ?? Guid.NewGuid();
     }
 
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public bool IsActive { get; set; } = true;
+    public Guid Id { get; protected set; }
+    public DateTime CreatedAt { get; protected set; }
+    public bool IsActive { get; protected set; } = true;
 }

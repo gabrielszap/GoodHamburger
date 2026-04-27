@@ -5,5 +5,7 @@
     <Project Path="GoodHamburger.Domain/GoodHamburger.Domain.csproj" />
     <Project Path="GoodHamburger.Infrastructure/GoodHamburger.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/testes/" />
+  <Folder Name="/testes/">
+    <Project Path="UnitTests/UnitTests.csproj" Id="560c7f44-e76f-4497-b60f-5f3805282eef" />
+  </Folder>
 </Solution>

@@ -46,7 +46,8 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                     description as Description,
                     price as Price,
                     type as Type,
-                    is_active as IsActive
+                    is_active as IsActive,
+                    created_at as CreatedAt
                 from product
                 where id = @Id
                 """,
@@ -130,14 +131,16 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                 set
                     description = @Description,
                     price = @Price,
-                    type = @Type
+                    type = @Type,
+                    is_active = @IsActive
                 where id = @Id;
                 """,
                 new { 
                     Id = id,
                     product.Description,
                     product.Price,
-                    Type = product.Type.ToString()
+                    Type = product.Type.ToString(),
+                    IsActive = product.IsActive
                 },
                 cancellationToken: cancellationToken));
     }
