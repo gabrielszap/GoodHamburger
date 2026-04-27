@@ -6,7 +6,7 @@ using GoodHamburger.Application.DTOs.Product;
 using GoodHamburger.Application.Mappers;
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
-using System.Threading;
+using GoodHamburger.Application.DTOs.Common;
 
 namespace GoodHamburger.Application.Services
 {
@@ -40,10 +40,21 @@ namespace GoodHamburger.Application.Services
             return ProductMapper.ToResult(product);
         }
 
-        public async Task<IReadOnlyCollection<ProductResult>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<PagedResult<ProductResult>> GetAllAsync(PaginationRequest pagination, CancellationToken cancellationToken)
         {
-            var products = await _productRepository.GetAllAsync(cancellationToken);
-            return ProductMapper.ToResultList(products);
+            var products = await _productRepository.GetAllAsync(pagination.Take, pagination.Skip, cancellationToken);
+
+            var totalItems = await _productRepository.CountAsync(cancellationToken);
+
+            var result = new PagedResult<ProductResult>
+            {
+                Items = products.Select(ProductMapper.ToResult).ToList(),
+                Page = pagination.Page,
+                PageSize = pagination.Take,
+                TotalItems = totalItems
+            };
+
+            return result;
         }
 
         public async Task UpdateAsync(Guid id, ProductRequest productRequest, CancellationToken cancellationToken)

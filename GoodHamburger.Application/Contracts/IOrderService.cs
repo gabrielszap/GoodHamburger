@@ -1,4 +1,5 @@
-﻿using GoodHamburger.Application.DTOs.Order;
+﻿using GoodHamburger.Application.DTOs.Common;
+using GoodHamburger.Application.DTOs.Order;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace GoodHamburger.Application.Contracts
     public interface IOrderService
     {
         Task<OrderResult> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<IReadOnlyCollection<OrderResult>> GetAllAsync(CancellationToken cancellationToken);
+        Task<PagedResult<OrderResult>> GetAllAsync(PaginationRequest pagination, CancellationToken cancellationToken);
         Task<OrderResult> CreateAsync(OrderRequest order, CancellationToken cancellationToken);
         Task UpdateAsync(Guid id, OrderRequest order, CancellationToken cancellationToken);
         Task DeleteAsync(Guid id, CancellationToken cancellationToken);

@@ -1,4 +1,5 @@
-﻿using GoodHamburger.Application.DTOs.Product;
+﻿using GoodHamburger.Application.DTOs.Common;
+using GoodHamburger.Application.DTOs.Product;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace GoodHamburger.Application.Contracts
 {
     public interface IProductService
     {
-        Task<IReadOnlyCollection<ProductResult>> GetAllAsync(CancellationToken cancellationToken);
+        Task<PagedResult<ProductResult>> GetAllAsync(PaginationRequest pagination, CancellationToken cancellationToken);
         Task<ProductResult> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<ProductResult> CreateAsync(ProductRequest productRequest, CancellationToken cancellationToken);
         Task UpdateAsync(Guid id, ProductRequest productRequest, CancellationToken cancellationToken);

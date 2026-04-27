@@ -58,9 +58,9 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         };
 
         if (problemDetails.Status == StatusCodes.Status500InternalServerError)
-            _logger.LogError(exception, "Unexpected error occurred.");
+            _logger.LogError(exception, "Unexpected error occurred." + "\n\n" + problemDetails.Detail);
         else
-            _logger.LogWarning(exception, "Handled exception occurred.");
+            _logger.LogWarning(exception, "Handled exception occurred." + "\n\n" + problemDetails.Detail);
 
         httpContext.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
         httpContext.Response.ContentType = "application/problem+json";
@@ -84,7 +84,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         {
             Status = StatusCodes.Status400BadRequest,
             Title = "Validation error",
-            Detail = "One or more validation errors occurred.",
+            Detail = errors.Any() ? string.Join("\n", errors.Select(kvp => $"{kvp.Key}: {string.Join(", ", kvp.Value)}")) : "One or more validation errors occurred.",
             Instance = httpContext.Request.Path
         };
     }

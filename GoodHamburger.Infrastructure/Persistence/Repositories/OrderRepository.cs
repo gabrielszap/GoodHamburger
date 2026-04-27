@@ -16,32 +16,46 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
     {
     }
 
-    public async Task<IReadOnlyCollection<Order>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Order>> GetAllAsync(int take, int skip, CancellationToken cancellationToken)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
+
+        var orderIds = await connection.QueryAsync<Guid>(
+            new CommandDefinition(
+                """
+            select
+                id as "Id"
+            from "order"
+            order by created_at desc
+            limit @Take offset @Skip;
+            """,
+                new
+                {
+                    Take = take,
+                    Skip = skip
+                },
+                cancellationToken: cancellationToken));
+
+
         var rows = await connection.QueryAsync<OrderProductRow>(
         new CommandDefinition(
             """
             select
-                o.id as "OrderId",
-                o.is_active as "OrderIsActive",
-                o.created_at as "CreatedAt",
-
+                op.order_id as "OrderId",
                 p.id as "ProductId",
                 p.description as "Description",
                 p.price as "Price",
                 p.type as "Type",
                 p.is_active as "ProductIsActive"
-            from "order" o
-            left join order_product op
-                on op.order_id = o.id
-               and op.is_active = true
-            left join "product" p
+            from order_product op
+            inner join "product" p
                 on p.id = op.product_id
-               and p.is_active = true
-            where o.is_active = true
-            order by o.created_at desc, p.type;
+            where op.order_id = any(@OrderIds)
+              and op.is_active = true;
             """,
+            new {
+                OrderIds = orderIds.ToArray()
+            },
             cancellationToken: cancellationToken));
 
         var orders = rows
@@ -204,6 +218,19 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                 {
                     Id = id
                 },
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken)
+    {
+        var connection = await GetOpenConnectionAsync(cancellationToken);
+
+        return await connection.ExecuteScalarAsync<int>(
+            new CommandDefinition(
+                """
+            select count(*)
+            from "order";
+            """,
                 cancellationToken: cancellationToken));
     }
 

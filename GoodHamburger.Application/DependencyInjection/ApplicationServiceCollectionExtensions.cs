@@ -1,5 +1,6 @@
 using FluentValidation;
 using GoodHamburger.Application.Contracts;
+using GoodHamburger.Application.DTOs.Common;
 using GoodHamburger.Application.DTOs.Order;
 using GoodHamburger.Application.DTOs.Product;
 using GoodHamburger.Application.Services;
@@ -13,6 +14,7 @@ public static class ApplicationServiceCollectionExtensions
     {
         services.AddValidatorsFromAssemblyContaining<OrderRequest>();
         services.AddValidatorsFromAssemblyContaining<ProductRequest>();
+        services.AddValidatorsFromAssemblyContaining<PaginationRequest>();
 
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IProductService,ProductService>();

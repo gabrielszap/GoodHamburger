@@ -15,7 +15,7 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
     {
     }
 
-    public async Task<IReadOnlyCollection<Product>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<Product>> GetAllAsync(int take, int skip, CancellationToken cancellationToken = default)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
         var products = await connection.QueryAsync<Product>(
@@ -29,7 +29,14 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                     is_active as IsActive,
                     created_at as CreatedAt
                 from product
+                order by created_at desc
+                limit @Take offset @Skip;
                 """,
+                new
+                {
+                    Take = take,
+                    Skip = skip
+                },
                 cancellationToken: cancellationToken));        
 
         return products.ToList() ?? new List<Product>();
@@ -161,6 +168,19 @@ public sealed class ProductRepository : DapperRepositoryBase, IProductRepository
                 {
                     Id = id
                 },
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken)
+    {
+        var connection = await GetOpenConnectionAsync(cancellationToken);
+
+        return await connection.ExecuteScalarAsync<int>(
+            new CommandDefinition(
+                """
+            select count(*)
+            from "product";
+            """,
                 cancellationToken: cancellationToken));
     }
 

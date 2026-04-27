@@ -1,4 +1,5 @@
 ﻿using GoodHamburger.Application.Contracts;
+using GoodHamburger.Application.DTOs.Common;
 using GoodHamburger.Application.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,9 +25,9 @@ namespace GoodHamburger.API.Controllers
         /// </remarks>
         /// <response code="200">Lista de produtos do menu</response>
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken cancellationToken)
         {
-            var result = await _productService.GetAllAsync(cancellationToken);
+            var result = await _productService.GetAllAsync(pagination, cancellationToken);
             return Ok(result);
         }
 

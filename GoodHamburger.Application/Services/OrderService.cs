@@ -6,6 +6,7 @@ using GoodHamburger.Application.DTOs.Order;
 using GoodHamburger.Application.Mappers;
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
+using GoodHamburger.Application.DTOs.Common;
 
 namespace GoodHamburger.Application.Services
 {
@@ -30,10 +31,21 @@ namespace GoodHamburger.Application.Services
             return OrderMapper.ToResult(order);
         }
 
-        public async Task<IReadOnlyCollection<OrderResult>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<PagedResult<OrderResult>> GetAllAsync(PaginationRequest pagination, CancellationToken cancellationToken)
         {
-            var orders = await _orderRepository.GetAllAsync(cancellationToken);
-            return OrderMapper.ToResultList(orders).ToList();
+            var orders = await _orderRepository.GetAllAsync(pagination.Take, pagination.Skip, cancellationToken);
+
+            var totalItems = await _orderRepository.CountAsync(cancellationToken);
+
+            var result = new PagedResult<OrderResult>
+            {
+                Items = orders.Select(OrderMapper.ToResult).ToList(),
+                Page = pagination.Page,
+                PageSize = pagination.Take,
+                TotalItems = totalItems
+            };
+
+            return result;
         }
         public async Task<OrderResult> CreateAsync(OrderRequest orderRequest, CancellationToken cancellationToken)
         {
@@ -43,8 +55,19 @@ namespace GoodHamburger.Application.Services
                 orderRequest.ProductIds,
                 cancellationToken);
 
-            if (products.Count != orderRequest.ProductIds.Count)
-                throw new NotFoundException("Um ou mais produtos informados não existem.");
+            // ids retornados do banco
+            var foundIds = products.Select(p => p.Id).ToHashSet();
+
+            // ids que vieram na request mas não existem no banco
+            var missingIds = orderRequest.ProductIds
+                .Where(id => !foundIds.Contains(id))
+                .ToList();
+
+            if (missingIds.Any())
+            {
+                var message = $"Os seguintes produtos não foram encontrados: {string.Join(", ", missingIds)}";
+                throw new NotFoundException(message);
+            }
 
             var order = Order.Create(products);
 
@@ -68,8 +91,19 @@ namespace GoodHamburger.Application.Services
                 orderRequest.ProductIds,
                 cancellationToken);
 
-            if (products.Count != orderRequest.ProductIds.Count)
-                throw new NotFoundException("Um ou mais produtos informados não existem.");
+            // ids retornados do banco
+            var foundIds = products.Select(p => p.Id).ToHashSet();
+
+            // ids que vieram na request mas não existem no banco
+            var missingIds = orderRequest.ProductIds
+                .Where(id => !foundIds.Contains(id))
+                .ToList();
+
+            if (missingIds.Any())
+            {
+                var message = $"Os seguintes produtos não foram encontrados: {string.Join(", ", missingIds)}";
+                throw new NotFoundException(message);
+            }
 
             var order = Order.Create(products);
 
