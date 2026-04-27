@@ -15,6 +15,14 @@ namespace GoodHamburger.API.Controllers
             _productService = productService;
         }
 
+        /// <summary>
+        /// Retorna o cardápio da lanchonete (menu).
+        /// </summary>
+        /// <remarks>
+        /// Este endpoint representa o menu disponível para pedidos.
+        /// Inclui sanduíches, acompanhamentos e bebidas.
+        /// </remarks>
+        /// <response code="200">Lista de produtos do menu</response>
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -22,6 +30,12 @@ namespace GoodHamburger.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Retorna um produto pelo identificador.
+        /// </summary>
+        /// <param name="id">Id do produto</param>
+        /// <response code="200">Produto encontrado</response>
+        /// <response code="404">Produto não encontrado</response>
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
@@ -29,6 +43,14 @@ namespace GoodHamburger.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Cria um novo produto.
+        /// </summary>
+        /// <remarks>
+        /// Utilizado para cadastrar itens no cardápio.
+        /// </remarks>
+        /// <response code="201">Produto criado com sucesso</response>
+        /// <response code="400">Erro de validação</response>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProductRequest productRequest, CancellationToken cancellationToken)
         {
@@ -36,6 +58,13 @@ namespace GoodHamburger.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        /// <summary>
+        /// Atualiza um produto existente.
+        /// </summary>
+        /// <param name="id">Id do produto</param>
+        /// <response code="204">Produto atualizado com sucesso</response>
+        /// <response code="400">Erro de validação</response>
+        /// <response code="404">Produto não encontrado</response>
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProductRequest productRequest, CancellationToken cancellationToken)
         {
@@ -43,6 +72,12 @@ namespace GoodHamburger.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Remove (inativa) um produto.
+        /// </summary>
+        /// <param name="id">Id do produto</param>
+        /// <response code="204">Produto removido com sucesso</response>
+        /// <response code="404">Produto não encontrado</response>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
