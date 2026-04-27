@@ -7,6 +7,7 @@
     <Project Path="GoodHamburger.Infrastructure/GoodHamburger.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/testes/">
-    <Project Path="UnitTests/UnitTests.csproj" Id="560c7f44-e76f-4497-b60f-5f3805282eef" />
+    <Project Path="GoodHamburger.IntegrationTests/GoodHamburger.IntegrationTests.csproj" Id="4405e898-dd02-4a4f-a4ec-8697f31a88d9" />
+    <Project Path="GoodHamburger.UnitTests/GoodHamburger.UnitTests.csproj" Id="560c7f44-e76f-4497-b60f-5f3805282eef" />
   </Folder>
 </Solution>
