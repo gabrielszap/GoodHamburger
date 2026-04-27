@@ -20,21 +20,22 @@ public class Product : BaseEntity
         IsActive = true;
     }
 
-    private Product(Guid id, string description, decimal price, ProductType type, bool isActive)
+    private Product(Guid id, string description, decimal price, ProductType type, bool isActive, DateTime createdAt)
     {
         Id = id;
         Description = description;
         Price = price;
         Type = type;
         IsActive = isActive;
+        CreatedAt = createdAt;
     }
 
     public static Product Create(string description, decimal price, ProductType type)
     {
         return new Product(description, price, type);
     }
-    public static Product Create(Guid id, string description, decimal price, ProductType type, bool isActive)
+    public static Product Create(Guid id, string description, decimal price, ProductType type, bool isActive, DateTime createdAt)
     {
-        return new Product(id, description, price, type, isActive);
+        return new Product(id, description, price, type, isActive, createdAt);
     }
 }

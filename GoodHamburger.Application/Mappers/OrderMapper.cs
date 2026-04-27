@@ -20,7 +20,8 @@ namespace GoodHamburger.Application.Mappers
                     Description = product.Description,
                     Price = product.Price,
                     Type = product.Type,
-                    IsActive = product.IsActive
+                    IsActive = product.IsActive,
+                    CreatedAt = product.CreatedAt
                 }).ToList(),
 
                 Subtotal = order.Subtotal,

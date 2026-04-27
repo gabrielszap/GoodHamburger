@@ -16,16 +16,22 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
     {
     }
 
-    public async Task<IReadOnlyCollection<Order>> GetAllAsync(int take, int skip, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Order>> GetAllAsync(
+    int take,
+    int skip,
+    CancellationToken cancellationToken)
     {
         var connection = await GetOpenConnectionAsync(cancellationToken);
 
-        var orderIds = await connection.QueryAsync<Guid>(
+        var orderRecords = (await connection.QueryAsync<OrderRecord>(
             new CommandDefinition(
                 """
             select
-                id as "Id"
+                id as "Id",
+                is_active as "IsActive",
+                created_at as "CreatedAt"
             from "order"
+            where is_active = true
             order by created_at desc
             limit @Take offset @Skip;
             """,
@@ -34,51 +40,61 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                     Take = take,
                     Skip = skip
                 },
-                cancellationToken: cancellationToken));
+                cancellationToken: cancellationToken)))
+            .ToList();
 
+        if (!orderRecords.Any())
+            return [];
 
-        var rows = await connection.QueryAsync<OrderProductRow>(
-        new CommandDefinition(
-            """
+        var rows = (await connection.QueryAsync<OrderProductRow>(
+            new CommandDefinition(
+                """
             select
                 op.order_id as "OrderId",
                 p.id as "ProductId",
                 p.description as "Description",
                 p.price as "Price",
                 p.type as "Type",
-                p.is_active as "ProductIsActive"
+                p.is_active as "ProductIsActive",
+                p.created_at as "CreatedAt"
             from order_product op
             inner join "product" p
                 on p.id = op.product_id
             where op.order_id = any(@OrderIds)
               and op.is_active = true;
             """,
-            new {
-                OrderIds = orderIds.ToArray()
-            },
-            cancellationToken: cancellationToken));
+                new
+                {
+                    OrderIds = orderRecords.Select(o => o.Id).ToArray()
+                },
+                cancellationToken: cancellationToken)))
+            .ToList();
 
-        var orders = rows
-            .GroupBy(x => new
-            {
-                x.OrderId,
-                x.OrderIsActive,
-                x.CreatedAt
-            })
-            .Select(group =>
-            {
-                var products = group
+        var productsByOrderId = rows
+            .GroupBy(x => x.OrderId)
+            .ToDictionary(
+                group => group.Key,
+                group => group
                     .Where(x => x.ProductId.HasValue)
                     .Select(x => Product.Create(
                         x.ProductId!.Value,
                         x.Description!,
                         x.Price!.Value,
                         x.Type,
-                        x.ProductIsActive!.Value
-                    ))
-                    .ToList();
+                        x.ProductIsActive!.Value,
+                        x.CreatedAt))
+                    .ToList());
 
-                return Order.Create(group.Key.OrderId, products.ToList(), group.Key.OrderIsActive, group.Key.CreatedAt);
+        var orders = orderRecords
+            .Select(orderRecord =>
+            {
+                productsByOrderId.TryGetValue(orderRecord.Id, out var products);
+
+                return Order.Create(
+                    orderRecord.Id,
+                    products ?? [],
+                    orderRecord.IsActive,
+                    orderRecord.CreatedAt);
             })
             .ToList();
 
@@ -114,7 +130,8 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                 p.description as "Description",
                 p.price as "Price",
                 p.type as "Type",
-                p.is_active as "IsActive"
+                p.is_active as "IsActive",
+                P.created_at as "CreatedAt"
             from order_product op
             inner join "product" p
                 on p.id = op.product_id
@@ -182,6 +199,7 @@ public sealed class OrderRepository : DapperRepositoryBase, IOrderRepository
                 {
                     Id = orderId,
                 },
+                Transaction,
                 cancellationToken: cancellationToken));
 
         foreach (var product in order.Products)

@@ -1,0 +1,114 @@
+@page "/orders/create"
+@using GoodHamburger.Blazor.Components.Common
+@using GoodHamburger.Blazor.Models
+@using GoodHamburger.Blazor.Services
+@inject GoodHamburger.Blazor.Services.MenuApiService MenuApiService
+@inject GoodHamburger.Blazor.Services.OrderApiService OrderApiService
+@inject NavigationManager Navigation
+
+<PageTitle>Criar pedido</PageTitle>
+
+<h1>🛒 Criar pedido</h1>
+
+@if (_loading)
+{
+    <p>Carregando cardápio...</p>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <ErrorBox 
+        Message="@_error"
+        OnRetry="CreateNewOrder"
+        OnBack="GoBack" />
+}
+else
+{
+    <div class="row">
+        @foreach (var product in _menu.Items)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5>@product.Description</h5>
+                        <span class="badge text-bg-secondary">@product.Type</span>
+                        <p class="fs-5 fw-bold mt-3">@product.Price.ToString("C")</p>
+
+                        <label class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   checked="@_selectedProductIds.Contains(product.Id)"
+                                   @onchange="args => ToggleProduct(product.Id, args)" />
+                            <span class="form-check-label">Selecionar</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <hr />
+
+    <button class="btn btn-success" @onclick="CreateNewOrder" disabled="@(!_selectedProductIds.Any())">
+        Finalizar pedido
+    </button>
+
+    <a class="btn btn-link" href="/orders">Voltar</a>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private PagedResult<ProductResult> _menu = new();
+    private readonly HashSet<Guid> _selectedProductIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _menu = await MenuApiService.GetMenuAsync(page: 1, pageSize: 20);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Message;
+        }
+        catch
+        {
+            _error = "Não foi possível processar a solicitação.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ToggleProduct(Guid productId, ChangeEventArgs args)
+    {
+        var selected = args.Value is bool value && value;
+
+        if (selected)
+            _selectedProductIds.Add(productId);
+        else
+            _selectedProductIds.Remove(productId);
+    }
+
+    private async Task CreateNewOrder()
+    {
+        try
+        {
+            _error = null;
+
+            await OrderApiService.CreateAsync(_selectedProductIds.ToList());
+
+            Navigation.NavigateTo("/orders");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/orders");
+    }
+}

@@ -1,0 +1,22 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <span>🍔</span>
+            <strong>GoodHamburger</strong>
+        </div>
+
+        <NavMenu />
+    </aside>
+
+    <main class="main-content">
+        @Body
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Ocorreu um erro inesperado.
+    <a href="." class="reload">Recarregar</a>
+    <span class="dismiss">🗙</span>
+</div>

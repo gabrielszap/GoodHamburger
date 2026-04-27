@@ -1,0 +1,131 @@
+@page "/orders"
+@using GoodHamburger.Blazor.Components.Common
+@using GoodHamburger.Blazor.Models
+@using GoodHamburger.Blazor.Services
+@inject GoodHamburger.Blazor.Services.OrderApiService OrderApiService
+@inject NavigationManager Navigation
+
+<PageTitle>Pedidos</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>📦 Pedidos</h1>
+    <a class="btn btn-warning" href="/orders/create">Criar pedido</a>
+</div>
+
+@if (_loading)
+{
+    <p>Carregando pedidos...</p>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <ErrorBox 
+        Message="@_error"
+        OnRetry="LoadOrdersAsync"
+        OnBack="GoHome" />
+}
+else if (!_orders.Items.Any())
+{
+    <div class="alert alert-info">
+        Nenhum pedido encontrado.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Pedido</th>
+                        <th>Produtos</th>
+                        <th>Subtotal</th>
+                        <th>Desconto</th>
+                        <th>Total</th>
+                        <th>Criado em</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in _orders.Items)
+                    {
+                        <tr>
+                            <td class="small">@order.Id</td>
+                            <td>
+                                @foreach (var product in order.Products)
+                                {
+                                    <div>@product.Description</div>
+                                }
+                            </td>
+                            <td>@order.Subtotal.ToString("C")</td>
+                            <td>@((order.DiscountPercentage * 100).ToString("0"))%</td>
+                            <td><strong>@order.TotalPrice.ToString("C")</strong></td>
+                            <td>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteOrder(order.Id)">
+                                    Remover
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-muted mt-3">Página @_orders.Page de @_orders.TotalPages — Total: @_orders.TotalItems</p>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private PagedResult<OrderResult> _orders = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        try
+        {
+            _loading = true;
+            _error = null;
+            _orders = await OrderApiService.GetOrdersAsync(page: 1, pageSize: 10);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Message;
+        }
+        catch
+        {
+            _error = "Não foi possível processar a solicitação.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteOrder(Guid id)
+    {
+        try
+        {
+            await OrderApiService.DeleteAsync(id);
+            await LoadOrdersAsync();
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Message;
+        }
+        catch
+        {
+            _error = "Não foi possível processar a solicitação.";
+        }
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

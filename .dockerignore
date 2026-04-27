@@ -11,5 +11,4 @@
 **/*.tmp
 **/*.log
 README.md
-docker-compose*.yml
 .gitignore

@@ -32,6 +32,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("BlazorClient", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:8081")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -54,6 +65,8 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
+app.UseCors("BlazorClient");
 
 app.MapControllers();
 

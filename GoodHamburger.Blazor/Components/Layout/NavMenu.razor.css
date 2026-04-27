@@ -1,0 +1,24 @@
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, .82);
+    border-radius: .65rem;
+    padding: .75rem .9rem;
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, .10);
+    color: #fff;
+}
+
+.nav-link.active {
+    background: #ffc107;
+    color: #151515;
+    font-weight: 700;
+}
